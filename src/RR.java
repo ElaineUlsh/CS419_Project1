@@ -2,67 +2,54 @@ import java.util.*;
 
 public class RR extends Algorithm {
 
-    // Ready queue for processes
     private final Queue<Process> readyQueue = new LinkedList<>();
-
-    // Processes that have not yet arrived
     private final Queue<Process> processesToArrive;
-
-    // Simulation clock
     private int now = 0;
-
-    // Time quantum (adjust manually for schedule1.txt or schedule2.txt)
     private final int timeQuantum;
 
     public RR(List<Process> allProcesses) {
         super(allProcesses);
-        processesToArrive = new LinkedList<>(allProcesses);
-        this.timeQuantum = 5;  // default, use 10 when testing with schedule2.txt
+        this.processesToArrive = new LinkedList<>(allProcesses);
+        this.timeQuantum = 5; // manually change to 10 for schedule2.txt
     }
 
     @Override
     public void schedule() {
         System.out.println("Round Robin (quantum=" + timeQuantum + "):");
 
-        // Initialize remaining times
-        for (Process p : processesToArrive) {
+        // Initialize remaining time for all processes
+        for (Process p : allProcesses) {
             p.setRemainingTime(p.getBurstTime());
         }
 
         while (!readyQueue.isEmpty() || !processesToArrive.isEmpty()) {
-            // If ready queue empty, jump forward in time to next process arrival
+
+            // If ready queue is empty, fast-forward to next arrival
             if (readyQueue.isEmpty()) {
-                Process process = processesToArrive.remove();
-                if (now < process.getArrivalTime()) {
-                    now = process.getArrivalTime();
-                }
-                readyQueue.add(process);
+                Process next = processesToArrive.remove();
+                now = Math.max(now, next.getArrivalTime());
+                readyQueue.add(next);
             }
 
-            Process currentProcess = readyQueue.remove();
+            Process current = readyQueue.remove();
 
-            int remaining = currentProcess.getRemainingTime();
-            int runTime = Math.min(timeQuantum, remaining);
+            int runTime = Math.min(timeQuantum, current.getRemainingTime());
 
-            // Execute for either quantum or remaining time
             System.out.print("At time " + now + ": ");
-            CPU.run(currentProcess, runTime);
+            CPU.run(current, runTime);
 
             now += runTime;
-            currentProcess.setRemainingTime(remaining - runTime);
+            current.setRemainingTime(current.getRemainingTime() - runTime);
 
-            // Add any newly arrived processes to ready queue
             while (!processesToArrive.isEmpty() &&
                     processesToArrive.peek().getArrivalTime() <= now) {
                 readyQueue.add(processesToArrive.remove());
             }
 
-            // If process still has remaining time, put it back in queue
-            if (currentProcess.getRemainingTime() > 0) {
-                readyQueue.add(currentProcess);
+            if (current.getRemainingTime() > 0) {
+                readyQueue.add(current);
             } else {
-                // Process completed
-                currentProcess.setFinishTime(now);
+                current.setFinishTime(now);
             }
         }
     }
