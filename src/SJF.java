@@ -27,27 +27,29 @@ public class SJF extends Algorithm {
     public void schedule() {
         System.out.println("Shortest Job First: ");
 
-        while (priorityQueue.isEmpty() || !processesToArrive.isEmpty()) {
-            Process process = processesToArrive.remove();
-            if (now <= process.getArrivalTime()) {
-                now = process.getArrivalTime();
+        while (!priorityQueue.isEmpty() || !processesToArrive.isEmpty()) {
+            if (priorityQueue.isEmpty()) {
+                Process process = processesToArrive.remove();
+                if (now <= process.getArrivalTime()) {
+                    now = process.getArrivalTime();
+                }
+                priorityQueue.add(process);
             }
-            priorityQueue.add(process);
-        }
 
-        Process currentProcess = priorityQueue.remove();
-        int runTime = currentProcess.getBurstTime();
+            Process currentProcess = priorityQueue.remove();
+            int runTime = currentProcess.getBurstTime();
 
-        System.out.println("At time " + now + ": ");
-        CPU.run(currentProcess, runTime);
+            System.out.print("At time " + now + ": ");
+            CPU.run(currentProcess, runTime);
 
-        now += runTime;
+            now += runTime;
 
-        currentProcess.setRemainingTime(0);
-        currentProcess.setFinishTime(now);
+            currentProcess.setRemainingTime(0);
+            currentProcess.setFinishTime(now);
 
-        while(!processesToArrive.isEmpty() && processesToArrive.peek().getArrivalTime() <= now) {
-            priorityQueue.add(processesToArrive.remove());
+            while(!processesToArrive.isEmpty() && processesToArrive.peek().getArrivalTime() <= now) {
+                priorityQueue.add(processesToArrive.remove());
+            }
         }
     }
 }
