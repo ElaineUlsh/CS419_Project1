@@ -1,11 +1,5 @@
 import java.util.*;
 
-/**
- * TODO: implement the SRTF (Shortest Remaining Time First) scheduling algorithm.
- *
- * SRTF is also known as preemptive SJF
- */
-
 public class SRTF extends Algorithm{
 
     private final Queue<Process> priorityQueue = new PriorityQueue<>(new CustomProcessComparatorSRTF());
@@ -18,9 +12,6 @@ public class SRTF extends Algorithm{
         super(allProcessesList);
         processesToArrive = new LinkedList<>(allProcessesList);
     }
-
-    // TODO: The issue is that it's adding things to the priority queue but some of the things haven't arrived yet
-    //  and this is messing with times afterwards
 
     @Override
     public void schedule(){
@@ -43,13 +34,17 @@ public class SRTF extends Algorithm{
 
             if (priorityQueue.isEmpty()) {
                 if (!processesToArrive.isEmpty()) {
-                    Process nextProcess = processesToArrive.peek();
-                    int nextArrivalTime = nextProcess.getArrivalTime();
+                    Iterator<Process> iterator = processesToArrive.iterator();
+                    while (iterator.hasNext()) {
+                        Process process = iterator.next();
+                        int arrivalTime = process.getArrivalTime();
 
-                    if (nextArrivalTime < now + runTime && nextProcess.getBurstTime() < runTime) {
-                        processingTime = nextArrivalTime - now;
-                        remainingTime = runTime - processingTime;
-                        willFinish = false;
+                        if (arrivalTime < now + runTime && process.getBurstTime() < runTime) {
+                            processingTime = arrivalTime - now;
+                            remainingTime = runTime - processingTime;
+                            willFinish = false;
+                            break;
+                        }
                     }
                 }
             } else { // could have processes that have already processed a bit
