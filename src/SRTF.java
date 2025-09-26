@@ -38,8 +38,9 @@ public class SRTF extends Algorithm{
                     while (iterator.hasNext()) {
                         Process process = iterator.next();
                         int arrivalTime = process.getArrivalTime();
+                        int finishingTime = now + runTime;
 
-                        if (arrivalTime < now + runTime && process.getBurstTime() < runTime) {
+                        if (arrivalTime < finishingTime && process.getBurstTime() < runTime - arrivalTime) {
                             processingTime = arrivalTime - now;
                             remainingTime = runTime - processingTime;
                             willFinish = false;
